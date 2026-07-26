@@ -2,6 +2,12 @@ import streamlit as st
 import os
 os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
+import zipfile
+
+if not os.path.exists("chroma_store") and os.path.exists("chroma_store.zip"):
+    with zipfile.ZipFile("chroma_store.zip", "r") as zip_ref:
+        zip_ref.extractall(".")
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 import requests
@@ -9,11 +15,9 @@ import requests
 st.set_page_config(page_title="First Aid Book Assistant")
 st.title("First Aid Book Assistant")
 
-# Read the API key from environment variable first (for local testing)
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 
-# When deployed, read from Streamlit secrets instead
 try:
     if not OPENROUTER_API_KEY:
         OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", "")
