@@ -5,22 +5,19 @@ os.environ["ANONYMIZED_TELEMETRY"] = "False"
 import zipfile
 import glob
 
-if not os.path.exists("chroma_store") and os.path.exists("chroma_store.zip"):
+if os.path.exists("chroma_store.zip") and not os.path.exists("chroma_store_extracted"):
     with zipfile.ZipFile("chroma_store.zip", "r") as zip_ref:
         zip_ref.extractall("chroma_store_extracted")
 
-# Find the actual folder that contains chroma.sqlite3, wherever it landed
 def find_chroma_path():
     candidates = glob.glob("**/chroma.sqlite3", recursive=True)
     if not candidates:
         return "./chroma_store"
-    # Pick the largest file (the real database, not an empty placeholder)
     best = max(candidates, key=lambda p: os.path.getsize(p))
     folder = os.path.dirname(os.path.abspath(best))
     return folder if folder != "" else "."
 
 CHROMA_PATH = find_chroma_path()
-
 import chromadb
 from sentence_transformers import SentenceTransformer
 import requests
