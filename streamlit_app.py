@@ -8,6 +8,10 @@ if not os.path.exists("chroma_store") and os.path.exists("chroma_store.zip"):
     with zipfile.ZipFile("chroma_store.zip", "r") as zip_ref:
         zip_ref.extractall(".")
 
+st.write("Debug - contents of current dir:", os.listdir("."))
+if os.path.exists("chroma_store"):
+    st.write("Debug - contents of chroma_store:", os.listdir("chroma_store"))
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 import requests
