@@ -3,14 +3,22 @@ import os
 os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 import zipfile
+import glob
 
 if not os.path.exists("chroma_store") and os.path.exists("chroma_store.zip"):
     with zipfile.ZipFile("chroma_store.zip", "r") as zip_ref:
-        zip_ref.extractall(".")
+        zip_ref.extractall("chroma_store_extracted")
 
-st.write("Debug - contents of current dir:", os.listdir("."))
-if os.path.exists("chroma_store"):
-    st.write("Debug - contents of chroma_store:", os.listdir("chroma_store"))
+# Find the actual folder that contains chroma.sqlite3, wherever it landed
+def find_chroma_path():
+    candidates = glob.glob("chroma_store/**/chroma.sqlite3", recursive=True)
+    candidates += glob.glob("chroma_store_extracted/**/chroma.sqlite3", recursive=True)
+    candidates += glob.glob("./chroma.sqlite3")
+    if candidates:
+        return os.path.dirname(os.path.abspath(candidates[0])) if os.path.dirname(candidates[0]) != "" else "."
+    return "./chroma_store"
+
+CHROMA_PATH = find_chroma_path()
 
 import chromadb
 from sentence_transformers import SentenceTransformer
@@ -35,14 +43,13 @@ def load_model():
 
 @st.cache_resource
 def load_collection():
-    client = chromadb.PersistentClient(path="./chroma_store")
+    client = chromadb.PersistentClient(path=CHROMA_PATH)
     return client.get_or_create_collection(name="first_aid_book")
 
 model = load_model()
 collection = load_collection()
-model = load_model()
-collection = load_collection()
 
+st.write(f"Debug - Chroma path used: {CHROMA_PATH}")
 st.write(f"Debug - items in collection: {collection.count()}")
 
 def retrieve_context(query, n_results=3):
