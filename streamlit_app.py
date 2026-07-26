@@ -11,12 +11,13 @@ if not os.path.exists("chroma_store") and os.path.exists("chroma_store.zip"):
 
 # Find the actual folder that contains chroma.sqlite3, wherever it landed
 def find_chroma_path():
-    candidates = glob.glob("chroma_store/**/chroma.sqlite3", recursive=True)
-    candidates += glob.glob("chroma_store_extracted/**/chroma.sqlite3", recursive=True)
-    candidates += glob.glob("./chroma.sqlite3")
-    if candidates:
-        return os.path.dirname(os.path.abspath(candidates[0])) if os.path.dirname(candidates[0]) != "" else "."
-    return "./chroma_store"
+    candidates = glob.glob("**/chroma.sqlite3", recursive=True)
+    if not candidates:
+        return "./chroma_store"
+    # Pick the largest file (the real database, not an empty placeholder)
+    best = max(candidates, key=lambda p: os.path.getsize(p))
+    folder = os.path.dirname(os.path.abspath(best))
+    return folder if folder != "" else "."
 
 CHROMA_PATH = find_chroma_path()
 
