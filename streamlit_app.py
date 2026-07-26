@@ -36,6 +36,10 @@ def load_collection():
 
 model = load_model()
 collection = load_collection()
+model = load_model()
+collection = load_collection()
+
+st.write(f"Debug - items in collection: {collection.count()}")
 
 def retrieve_context(query, n_results=3):
     query_embedding = model.encode([query]).tolist()
